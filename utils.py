@@ -73,15 +73,10 @@ from hyperparams import *
 #############
 ## No need ##
 #############
-# import torch
-# import interpret
-# import interpret.glassbox as ebm
-# from imblearn.ensemble import * # BalancedRandomForestClassifier
 # import feature_engine.selection as fts
 # from feature_engine import transformation as vt
 # from feature_engine.imputation import CategoricalImputer, MeanMedianImputer
 # from feature_engine.outliers import Winsorizer, OutlierTrimmer
-
 
 
 
@@ -95,10 +90,9 @@ print(f"sklearn: {sklearn.__version__}")
 print(f"optuna: {optuna.__version__}")
 print(f"zoish: {zoish.__version__}")
 print(f"lohrasb: {lohrasb.__version__}")
-
 # print(f"torch: {torch.__version__}")
-# print(f"interpret: {interpret.__version__}")
 # print(f"catboost: {cb.__version__}")
+
 
 
 def set_dtype(df, pheno_df, new_numeric_cols):
@@ -152,7 +146,6 @@ def merge_data(pre_fp, pgs_fp, dur_dx_fp, admixture_fp, pheno_df):
     pre_df = reduce(lambda left,right: pd.merge(left,right,on='eid'), [pre_df, pgs_df, dur_dx_df, admixture_df])
 
     all_cols = pre_df.columns[1:].tolist() # excluding eid
-    # centre_cols = pre_df.columns[pre_df.columns.str.contains(pat = '_f54$')].tolist()
     age_gender_cols = pre_df.columns[pre_df.columns.str.contains(pat = '_f21003$|_f31$')].tolist()
     treatment_cols = pre_df.columns[pre_df.columns.str.contains(pat = '_f20003$|medication|Medication')].tolist()
     ancestry_family_history_cols = pre_df.columns[pre_df.columns.str.contains(pat = 'EUR|SAS|EAS|AMR|AFR|ethnic|Family_illness')].tolist()
@@ -188,7 +181,6 @@ def merge_data(pre_fp, pgs_fp, dur_dx_fp, admixture_fp, pheno_df):
         "join_ukb_prs": join_ukb_pgs_cols,
         "unmodifiable": unmodifiable_cols,
         "duration_of_dx": dur_dx_cols,
-        # "preds": preds_cols
     }
 
     # excluded columns
@@ -196,9 +188,6 @@ def merge_data(pre_fp, pgs_fp, dur_dx_fp, admixture_fp, pheno_df):
                      'home_location_at_assessment_east_coordinate_rounded_f20074',
                      'home_location_at_assessment_north_coordinate_rounded_f20075',
                      'uk_biobank_assessment_centre_f54',
-                     
-                     # 'CAD_GRS_300_JACC_2019_proxy(300|Tlab_NonUKB)', # GWAS derived from CardioGRAMC4D and GCTA
-                     
                     ] + age_of_dx_cols + pre_df.columns[pre_df.isnull().all()].tolist() 
     print(f"\nBasic exclusion counts: {len(base_excluded)}")
     print(f"{base_excluded}")
@@ -254,7 +243,7 @@ def get_model_design(my_step, my_y_lbl, my_pkg, pre_df, col_dict):
     model_design_df = pd.read_csv(model_design_fp, sep = "\t", doublequote=True, quotechar='"',quoting=3)
     
     model_design_df = model_design_df.fillna(value={"In_ASCVD": "F", "In_QRISK3": "F"})    
-    config_df = model_design_df.loc[model_design_df['Type'].isin(['binary', 'num', 'diagnosis']), ][["Type", "Trait", "In_ASCVD", "In_QRISK3", "Exclusion"]] #  "Return",
+    config_df = model_design_df.loc[model_design_df['Type'].isin(['binary', 'num', 'diagnosis']), ][["Type", "Trait", "In_ASCVD", "In_QRISK3", "Exclusion"]] 
     target_trait_config = config_df.loc[config_df["Trait"] == my_y_lbl, ].squeeze()
     if target_trait_config.shape[0] == 0:
         sys.exit(f"Invalid target outcome not found in the model designs {my_y_lbl}")
@@ -297,11 +286,8 @@ def get_model_design(my_step, my_y_lbl, my_pkg, pre_df, col_dict):
 def split_ukbb(stratify_fp, ukbb_df, dx, lbls):
     split_dict = {}
     stratify_df = pd.read_csv(stratify_fp).astype({"eid": int})
-    sub_ids = stratify_df[stratify_df[dx].isin(lbls)]['eid']  #stratify_df.loc[(stratify_df[dx] in lbls), "eid"]
-    # print(len(sub_ids))
-    # print(ukbb_df.shape)
+    sub_ids = stratify_df[stratify_df[dx].isin(lbls)]['eid']
     sub_df = ukbb_df[(ukbb_df['eid'].isin(sub_ids))]
-    # print(sub_df.shape)
     return sub_df
 
 
@@ -379,7 +365,6 @@ def load_config(my_step, my_y_lbl, my_pkg, my_final_round, pre_df, col_dict):
                 ("base", "age_gender_only"):           list(set(["eid", y_label] + col_dict["age_gender"])),
                 ("base", "unmodifiable"):              list(set(["eid", y_label] + col_dict["unmodifiable"])),
                 ("base", "no_contemps"):               [n for n in dfs["base"].columns         if n not in col_dict["ascvd"] + col_dict["qrisk"]],
-                # ("base", "all"):                       dfs["base"].columns
             }
         
         if target_type == 'diagnosis':
@@ -403,11 +388,6 @@ def load_config(my_step, my_y_lbl, my_pkg, my_final_round, pre_df, col_dict):
             exclude_dx_duration = [n for n in col_dict["duration_of_dx"] if y_label in n] 
             
             training_configs = {
-                # ("base", "age_gender_only"):           list(set(["eid", y_label] + col_dict["age_gender"])),
-                # ("base", "unmodifiable"):              list(set(["eid", y_label] + col_dict["unmodifiable"])),
-                # ("base", "no_contemps"):               [n for n in dfs["base"].columns         if n not in exclude_dx_duration + col_dict["ascvd"] + col_dict["qrisk"]],
-                # ("base", "all"):                       [n for n in dfs["base"].columns         if n not in exclude_dx_duration],
-                
                 ("earlyonset", "age_gender_only"):     list(set(["eid", y_label] + col_dict["age_gender"])),
                 ("earlyonset", "unmodifiable"):        list(set(["eid", y_label] + col_dict["unmodifiable"])),
                 # ("earlyonset", "no_contemps"):         [n for n in dfs["earlyonset"].columns   if n not in exclude_dx_duration + col_dict["ascvd"] + col_dict["qrisk"]],
@@ -556,32 +536,6 @@ def make_zoish_selector(X_train, y_train, estimators_dict, params_dict, trainer,
             study_optimize_gc_after_trial = True,
             study_optimize_show_progress_bar = False,
             )
-    
-    # .set_tunesearchcv_params(
-    #         measure_of_accuracy=my_scorer,
-    #         verbose=0,
-    #         n_jobs=-1, # None,
-    #         cv=10,
-    #         early_stopping=None, 
-    #         n_trials=n_trials,
-    #         # if measure_of_accuracy=None, scoring will be used.
-    #         scoring=None, 
-    #         refit=True, 
-    #         error_score='raise', 
-    #         return_train_score=False, 
-    #         local_dir=None, # '~/ray_results', 
-    #         name=None, 
-    #         max_iters=1, 
-    #         search_optimization='hyperopt',
-    #         use_gpu=False, 
-    #         loggers=None, 
-    #         pipeline_auto_early_stop=True, 
-    #         stopper=None, 
-    #         time_budget_s=None, 
-    #         mode=None,
-    #         search_kwargs=None, 
-    # )
-    
     return feature_selector
 
 
@@ -590,7 +544,7 @@ def set_opt_params(my_step, trainer):
     # set classification / regression
     if trainer[1] == "classifier":
         if my_step != "final": #ADJUSTED
-            measure_of_accuracy = f"f1_score(y_true, y_pred, average='macro')"  # f"roc_auc_score(y_true, y_pred)" # f"f1_score(y_true, y_pred, average='macro')" # 
+            measure_of_accuracy = f"f1_score(y_true, y_pred, average='macro')"  
         else:
             measure_of_accuracy = f"f1_score(y_true, y_pred, average='macro')" 
         print(f"measure_of_accuracy USED {measure_of_accuracy}")
@@ -617,13 +571,7 @@ def make_zoish_lohrasb_pipeline(my_step, X_train, y_train, trainer, fname, n_fea
         transformers.append(("CatBoostEncoder", cen.CatBoostEncoder(random_state = 19920722),))
         
     measure_of_accuracy, with_stratified = set_opt_params(my_step, trainer)
-    
-    # set linear-based-l1 / tree-based-shap feature selection
-    # if trainer == ("lm", "classifier"):
-    #     feature_selector = RFECV(estimator = LogisticRegression()) # RFE(estimator = LogisticRegression(), n_features_to_select = n_features)         
-    # elif trainer == ("lm", "regressor"):
-    #     feature_selector = RFECV(estimator = LinearRegression()) # RFE(estimator = LinearRegression(), n_features_to_select = n_features) 
-    
+
     feature_selectors = []
     if shap_df is None:
         # shap approximate cannot work with catboost
@@ -661,7 +609,6 @@ def make_zoish_lohrasb_pipeline(my_step, X_train, y_train, trainer, fname, n_fea
                 estimator = estimators_dict[trainer],
                 estimator_params = params_dict[trainer],
                 measure_of_accuracy = measure_of_accuracy,
-                # add_extra_args_for_measure_of_accuracy = False,
                 with_stratified = with_stratified,
                 fit_params = {},
                 test_size = 0.10,
@@ -690,34 +637,6 @@ def make_zoish_lohrasb_pipeline(my_step, X_train, y_train, trainer, fname, n_fea
                 study_optimize_show_progress_bar = False
     )
     
-    # .optimize_by_tunesearchcv(
-    #         estimator=estimators_dict[trainer],
-    #         estimator_params=params_dict[trainer],
-    #         fit_params = {},
-    #         measure_of_accuracy=my_scorer, # f"{measure_of_accuracy}_score(y_true, y_pred)",
-    #         verbose=0,
-    #         random_state=19920722,
-    #         n_jobs=-1, # None,
-    #         cv = kfold, # KFold(10),
-    #         early_stopping=None, 
-    #         n_trials=n_trials,
-    #         scoring=None, 
-    #         refit=True, 
-    #         error_score='raise', 
-    #         return_train_score=False, 
-    #         local_dir=None, #'~/ray_results', 
-    #         name=None, 
-    #         max_iters=1, 
-    #         search_optimization='hyperopt',
-    #         use_gpu=False, 
-    #         loggers=None, 
-    #         pipeline_auto_early_stop=True, 
-    #         stopper=None, 
-    #         time_budget_s=None, 
-    #         mode=None,
-    #         search_kwargs=None, 
-    #     )
-
     # make pipeline
     SHAP_PIP = Pipeline(
         [("ALLColumn", ColumnSelector(all_features))] + 
@@ -727,128 +646,6 @@ def make_zoish_lohrasb_pipeline(my_step, X_train, y_train, trainer, fname, n_fea
     )
         
     return SHAP_PIP
-
-
-def interpretml_feature_importance(EBM_PIP):
-    if any("LohrasbOptimizer" in step for step in list(EBM_PIP.named_steps.keys())):
-        names = np.array(EBM_PIP[-1].best_estimator.explain_global().data()['names'])
-        scores = np.array(EBM_PIP[-1].best_estimator.explain_global().data()['scores'])
-    else:
-        names = np.array(EBM_PIP[-1].explain_global().data()['names'])
-        scores = np.array(EBM_PIP[-1].explain_global().data()['scores'])
-    
-    # ind = np.argpartition(scores, (n_features * (-1)))[(n_features * (-1)):]
-    # sorted_ind = ind[np.argsort(scores[ind])]
-    # selected_features = list(names[sorted_ind][::-1])
-    
-    ebm_importance_df = pd.DataFrame({"column_name": names, 
-                                      "feature_importance": scores}
-                                    ).sort_values(by='feature_importance', ascending=False)
-    return ebm_importance_df
-
-
-
-def interpretml_selection(X_train, y_train, trainer, n_features, n_trials, measure_of_accuracy, with_stratified):
-    ebm_selector_params = params_dict[trainer].copy()
-    ebm_selector_params['interactions'] = [0, 0]
-
-    ebm_lohrasb = BaseModel().optimize_by_optuna( 
-                estimator = estimators_dict[trainer],
-                estimator_params = ebm_selector_params,
-                measure_of_accuracy = measure_of_accuracy, # f"{measure_of_accuracy}_score(y_true, y_pred)",
-                # add_extra_args_for_measure_of_accuracy = False,
-                with_stratified = with_stratified,
-                fit_params = {},
-                test_size = 0.10,
-                verbose = 0,
-                n_jobs = 1,
-                random_state = 19920722,
-                # optuna params
-                # optuna study init params
-                study = optuna.create_study(
-                    storage = None,
-                    sampler = TPESampler(seed = 19920722),
-                    pruner = HyperbandPruner(),
-                    study_name = None,
-                    direction = "maximize",
-                    load_if_exists = False,
-                    directions = None,
-                ),
-                # optuna optimization params
-                study_optimize_objective = None,
-                study_optimize_objective_n_trials = n_trials,
-                study_optimize_objective_timeout = 600,
-                study_optimize_n_jobs = 1,
-                study_optimize_catch = (),
-                study_optimize_callbacks = None,
-                study_optimize_gc_after_trial = True,
-                study_optimize_show_progress_bar = False,
-            )
-    
-    EBM_SELECTOR_PIP = Pipeline(
-        [(f"LohrasbOptimizer_{trainer[0]}_{trainer[1]}", ebm_lohrasb)]
-    )
-    
-    EBM_SELECTOR_PIP.fit(X_train, y_train)
-    ebm_importance_df = interpretml_feature_importance(EBM_SELECTOR_PIP)
-    selected_features = list(ebm_importance_df['column_name'].values)[:n_features]
-    
-    return selected_features, ebm_importance_df
-
-
-
-def make_interpretml_lohrasb_pipeline(X_train, y_train, trainer, fname, n_features, n_trials):
-    measure_of_accuracy, with_stratified = set_opt_params(trainer)
-        
-    if n_features < X_train.shape[1]:
-        selected_features, ebm_importance_df = interpretml_selection(X_train, y_train, trainer, n_features, n_trials, measure_of_accuracy, with_stratified)
-        ebm_importance_df.to_csv(f"explain_global.{fname}.preselect.tsv", sep = '\t', index=False)
-    else:
-        selected_features = list(X_train.columns)
-
-    ebm_optimizor_params = params_dict[trainer].copy()
-    ebm_optimizor_params['outer_bags'] = [10, 25]
-    ebm_optimizor_params['inner_bags'] = [10, 25]
-    
-    lohrasb_opt = BaseModel().optimize_by_optuna(
-                estimator = estimators_dict[trainer],
-                estimator_params = ebm_optimizor_params,
-                measure_of_accuracy = measure_of_accuracy, # f"{measure_of_accuracy}_score(y_true, y_pred)",
-                # add_extra_args_for_measure_of_accuracy = False,
-                with_stratified = with_stratified,
-                fit_params = {},
-                test_size = 0.10,
-                verbose = 0,
-                n_jobs = 1,
-                random_state = 19920722,
-                # optuna params
-                # optuna study init params
-                study = optuna.create_study(
-                    storage = None,
-                    sampler = TPESampler(seed = 19920722),
-                    pruner = HyperbandPruner(),
-                    study_name = None,
-                    direction = "maximize",
-                    load_if_exists = False,
-                    directions = None,
-                ),
-                # optuna optimization params
-                study_optimize_objective = None,
-                study_optimize_objective_n_trials = n_trials,
-                study_optimize_objective_timeout = 600,
-                study_optimize_n_jobs = 1,
-                study_optimize_catch = (),
-                study_optimize_callbacks = None,
-                study_optimize_gc_after_trial = True,
-                study_optimize_show_progress_bar = False,
-            )
-    
-    EBM_PIP = Pipeline(
-        [("ColumnSelector", ColumnSelector(selected_features))] + 
-        [(f"LohrasbOptimizer_{trainer[0]}_{trainer[1]}", lohrasb_opt)]
-    )
-    
-    return EBM_PIP
 
 
 def make_mini_pipeline(pre_PIP, re_X_train, re_y_train, trainer, fname):
@@ -863,7 +660,7 @@ def make_mini_pipeline(pre_PIP, re_X_train, re_y_train, trainer, fname):
         selector_step = max(loc for loc, val in enumerate(list(pre_PIP.named_steps.keys())) if 'Selector' in val)
         selected_cols = sorted(pre_PIP[selector_step].selected_cols)
     else:
-        selected_cols = sorted(list(re_X_train.columns)) # [i for i in list(df.columns) if i not in ["eid", y_title]])
+        selected_cols = sorted(list(re_X_train.columns))
     print(f"re-training selected cols: {len(selected_cols)}")    
     
     if trainer[0] == "cat":
@@ -892,58 +689,48 @@ def make_mini_pipeline(pre_PIP, re_X_train, re_y_train, trainer, fname):
 
 def importance_review(X_test, y_title, PIP, trainer, n_features, fname, review_cohort, retrain = False, show = False, n_approx = 50):
     
-    if n_features > n_approx: # X_test.shape[1] > n_approx:
+    if n_features > n_approx:
         pass
-    
-    elif trainer[0] == "ebm":
-        if retrain == False:
-            explain_global_fp = f"explain_global.{fname}.{review_cohort}.tsv"
-        else:
-            explain_global_fp = f"retrain_explain_global.{fname}.{review_cohort}.tsv"
-        ebm_importance_df = interpretml_feature_importance(PIP)
-        ebm_importance_df.to_csv(explain_global_fp, sep = '\t', index=False)
-        
+    if retrain == False:
+        shap_fp = f"shap.{fname}.{review_cohort}.png"
     else:
-        if retrain == False:
-            shap_fp = f"shap.{fname}.{review_cohort}.png"
+        shap_fp = f"retrain_shap.{fname}.{review_cohort}.png"
+
+    try:
+        my_shap = Path(shap_fp)
+        if my_shap.is_file():
+            print(f"found {shap_fp}: found pre-examined shap!!!")
         else:
-            shap_fp = f"retrain_shap.{fname}.{review_cohort}.png"
-            
-        try:
-            my_shap = Path(shap_fp)
-            if my_shap.is_file():
-                print(f"found {shap_fp}: found pre-examined shap!!!")
-            else:
-                plt.cla()
-                plt.clf()
-                fig = plt.gcf()
-
-                if len(PIP.steps) == 1:
-                    scaled_X_test = X_test
-                    estimator = PIP[0]
-                else:
-                    scaled_X_test = PIP[:-1].transform(X_test)
-                    if "best_estimator" in dir(PIP[-1]):
-                        estimator = PIP[-1].best_estimator
-                    else:
-                        estimator = PIP[-1]
-
-                explainer = fasttreeshap.TreeExplainer(estimator, algorithm = "v2", n_jobs = -1)
-                shap_values = explainer.shap_values(scaled_X_test)
-
-                if show != True:
-                    shap.summary_plot(shap_values, scaled_X_test, max_display = n_features, show = False)
-                    plt.title(f"{y_title}")
-                    fig.savefig(shap_fp, dpi=300, bbox_inches='tight', transparent="True", pad_inches=0)
-                else:
-                    shap.summary_plot(shap_values, scaled_X_test, max_display = n_features, show = show)
-                    plt.title(f"{y_title}")
-            plt.close()
             plt.cla()
             plt.clf()
+            fig = plt.gcf()
 
-        except:
-            print("model too complicated to review the shap...")
+            if len(PIP.steps) == 1:
+                scaled_X_test = X_test
+                estimator = PIP[0]
+            else:
+                scaled_X_test = PIP[:-1].transform(X_test)
+                if "best_estimator" in dir(PIP[-1]):
+                    estimator = PIP[-1].best_estimator
+                else:
+                    estimator = PIP[-1]
+
+            explainer = fasttreeshap.TreeExplainer(estimator, algorithm = "v2", n_jobs = -1)
+            shap_values = explainer.shap_values(scaled_X_test)
+
+            if show != True:
+                shap.summary_plot(shap_values, scaled_X_test, max_display = n_features, show = False)
+                plt.title(f"{y_title}")
+                fig.savefig(shap_fp, dpi=300, bbox_inches='tight', transparent="True", pad_inches=0)
+            else:
+                shap.summary_plot(shap_values, scaled_X_test, max_display = n_features, show = show)
+                plt.title(f"{y_title}")
+        plt.close()
+        plt.cla()
+        plt.clf()
+
+    except:
+        print("model too complicated to review the shap...")
     
     
     
@@ -1011,13 +798,12 @@ def save_joblib(PIP, joblib_fp):
 
 def get_X_y_idx(df, y_title, drop_cols, trainer, selected_cols = []):
     idx = df['eid']
-    # df = df[['eid'] + selected_cols + [y_title]]
     df = df.reindex(sorted(df.columns), axis=1)
     drop_cols = drop_cols + df.columns[df.isna().any()].tolist()
     if trainer[1] == "classifier":
-        y = df.loc[:,df.columns == y_title].astype(int) # special for ebm classification
+        y = df.loc[:,df.columns == y_title].astype(int) 
     else:
-        y = df.loc[:,df.columns == y_title].astype(float) # essential even for binary outcome
+        y = df.loc[:,df.columns == y_title].astype(float) 
     df = df.drop(drop_cols, errors='ignore', axis = 1)
     X = df.loc[:,df.columns != y_title]
     print(f"training data size: {X.shape}")
@@ -1059,29 +845,22 @@ def fit_pipeline(my_step, joblib_fp, X_train, y_train, trainer, fname, n_feature
         my_shap = Path(my_shap_path)
         
         if RE_PIP == None:
-            if trainer[0] == "ebm":
-                pre_PIP = make_interpretml_lohrasb_pipeline(X_train, y_train, trainer, fname, n_features, n_trials)
-                pre_PIP.fit(X_train, y_train)
+            if my_shap.is_file():
+                print(f"found {my_shap_path}: load pre-selected shap importance scores!!!")
+                shap_df = pd.read_csv(my_shap_path, sep = '\t')
+                pre_PIP = make_zoish_lohrasb_pipeline(my_step, X_train, y_train, trainer, fname, n_features, n_trials, shap_df = shap_df)
             else:
-                if my_shap.is_file():
-                    print(f"found {my_shap_path}: load pre-selected shap importance scores!!!")
-                    shap_df = pd.read_csv(my_shap_path, sep = '\t')
-                    pre_PIP = make_zoish_lohrasb_pipeline(my_step, X_train, y_train, trainer, fname, n_features, n_trials, shap_df = shap_df)
-                else:
-                    # if my_step == "final":
-                    pre_PIP = make_zoish_lohrasb_pipeline(my_step, X_train, y_train, trainer, fname, n_features, n_trials, n_approx = n_approx)
-                    # else:
-                    #     pre_PIP = make_zoish_lohrasb_pipeline(X_train, y_train, trainer, fname, n_features, n_trials, n_approx = n_approx) # TODO - allow more n_approx if my_step == "final"
-                pre_PIP.fit(X_train, y_train)
-                
-                if any("ZoishSelector" in step for step in list(pre_PIP.named_steps.keys())):
-                    pre_PIP[-2].importance_df.to_csv(my_shap_path, sep = '\t', index=False)
+                pre_PIP = make_zoish_lohrasb_pipeline(my_step, X_train, y_train, trainer, fname, n_features, n_trials, n_approx = n_approx)
+            pre_PIP.fit(X_train, y_train)
+
+            if any("ZoishSelector" in step for step in list(pre_PIP.named_steps.keys())):
+                pre_PIP[-2].importance_df.to_csv(my_shap_path, sep = '\t', index=False)
                         
             PIP = make_mini_pipeline(pre_PIP, X_train, y_train, trainer, fname)
         else:
             PIP = RE_PIP
             
-        # pre_PIP = load(joblib_fp)
+        
         if with_sample_weight == True and trainer[1] == "classifier":
             # https://stackoverflow.com/questions/47399350/how-does-sample-weight-compare-to-class-weight-in-scikit-learn
             # https://stackoverflow.com/questions/67868420/xgboost-for-multiclassification-and-imbalanced-data
@@ -1113,14 +892,12 @@ def train_opt_pipeline(my_step, df, y_title, drop_cols, trainer, fname, n_featur
         X_train, X_test, y_train, y_test, idx_train, idx_test = set_train_test(trainer, X, y, idx)
         PIP = fit_pipeline(my_step, f"base_pipeline.{fname}.joblib", X_train, y_train, trainer, fname, n_features, n_trials)
         y_pred, acc = eval_pred(PIP, trainer, X_test, y_test)
-        # importance_review(X_test, y_title, PIP, trainer, n_features, fname, "test", False)       
             
     elif my_step == "base_predict":
         X_train, X_test, y_train, y_test, idx_train, idx_test = X, X, y, y, idx, idx
         y_pred, acc = eval_pred(PIP, trainer, X_test, y_test)
         print("save base_predict first time.")
         save_preds(f"base_pred.{fname}.pkl", trainer, fname, idx_test, y_pred, "test/validate", f"{test_acc}/{acc}") 
-        # importance_review(X, y_title, PIP, trainer, n_features, fname, "predict", False)
             
     elif my_step == "final": # for now it's always CAD
         X_train, X_test, y_train, y_test, idx_train, idx_test = set_train_test(trainer, X, y, idx)
@@ -1128,7 +905,6 @@ def train_opt_pipeline(my_step, df, y_title, drop_cols, trainer, fname, n_featur
         y_pred, acc = eval_pred(PIP, trainer, X_test, y_test)
         print("save final_predict first time.")
         save_preds(f"final_pred.{fname}.pkl", trainer, fname, idx_test, y_pred, "test", acc)
-        # importance_review(X_test, y_title, PIP, trainer, n_features, fname, "test", False)
         
     else:
         sys.exit(f"invalid step: {my_step}")
@@ -1138,31 +914,23 @@ def train_opt_pipeline(my_step, df, y_title, drop_cols, trainer, fname, n_featur
 
 def retrain_best_pipeline(my_step, df, y_title, drop_cols, trainer, fname, PIP, test_acc = 0):
     print(f"\n==== retrain_best_pipeline ==== {my_step} ====")
-    # if any("Selector" in step for step in list(RE_PIP.named_steps.keys())):
-    #     selected_cols = sorted(RE_PIP[-2].selected_cols)
-    # else:
-    #     selected_cols = sorted([i for i in list(df.columns) if i not in ["eid", y_title]])
-    # print(f"re-training selected cols: {len(selected_cols)}")
     
-    re_X, re_y, re_idx = get_X_y_idx(df, y_title, drop_cols, trainer) #, selected_cols = selected_cols)
+    re_X, re_y, re_idx = get_X_y_idx(df, y_title, drop_cols, trainer)
     
     if my_step == "base_fit":
         REFIT_PIP = fit_pipeline(my_step, f"retrain_base_pipeline.{fname}.joblib", re_X, re_y, trainer, fname, RE_PIP = PIP, with_sample_weight = True)
         re_y_pred, re_acc = eval_pred(REFIT_PIP, trainer, re_X, re_y)
-        # importance_review(re_X, y_title, REFIT_PIP, trainer, re_X.shape[1], fname, f"test", True)
             
     elif my_step == "base_predict":
         REFIT_PIP = PIP
         re_y_pred, re_acc = eval_pred(REFIT_PIP, trainer, re_X, re_y)
         save_preds(f"retrain_base_pred.{fname}.pkl", trainer, fname, re_idx, re_y_pred, "test/validate", f"{test_acc}/{re_acc}")
-        # importance_review(re_X, y_title, REFIT_PIP, trainer, re_X.shape[1], fname, f"predict", True)
             
     elif my_step == "final":
         re_X_train, re_X_test, re_y_train, re_y_test, re_idx_train, re_idx_test = set_train_test(trainer, re_X, re_y, re_idx)
         REFIT_PIP = fit_pipeline(my_step, f"retrain_final_pipeline.{fname}.joblib", re_X_train, re_y_train, trainer, fname, RE_PIP = PIP, with_sample_weight = True)
         re_y_pred, re_acc = eval_pred(REFIT_PIP, trainer, re_X_test, re_y_test)
-        save_preds(f"retrain_final_pred.{fname}.pkl", trainer, fname, re_idx_test, re_y_pred, "final_retrain_test", re_acc) # don't use the 2nd/3rd values.
-        # importance_review(re_X_test, y_title, REFIT_PIP, trainer, re_X_test.shape[1], fname, f"test", True)
+        save_preds(f"retrain_final_pred.{fname}.pkl", trainer, fname, re_idx_test, re_y_pred, "final_retrain_test", re_acc)
         
     else:
         sys.exit(f"invalid step: {my_step}")
@@ -1204,7 +972,7 @@ def execute_model_workflow(my_n_features, my_n_trials, dfs, base_excluded, cus_d
     if my_step == "base_fit":
         PIP, y_pred, acc = train_opt_pipeline(my_step, df, y_title, drop_cols, trainer, fname, my_n_features, my_n_trials)
         RE_PIP, re_y_pred, re_acc = retrain_best_pipeline(my_step, df, y_title, drop_cols, trainer, fname, PIP = PIP)
-        return  None, acc # [y_pred, re_y_pred], [acc, re_acc] # ignore retrain_acc (always overfitted since no test cohort)
+        return  None, acc
 
     elif my_step == "base_predict":
         joblib_fp = f"base_pipeline.{fname}.joblib"
