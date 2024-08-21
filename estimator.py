@@ -14,7 +14,7 @@ def parse_arguments():
     parser.add_argument('--y_lbl', required=True, help='Label Y')
     parser.add_argument('--step', default='base', choices=['base', 'final'], help='Step to execute')
     parser.add_argument('--n_features', type=int, default=10, help='Number of features')
-    parser.add_argument('--pkg', default='xgb', choies=['xgb', 'cat', 'lgb'], help='Package to use')
+    parser.add_argument('--pkg', default='xgb', choices=['xgb', 'cat', 'lgb'], help='Package to use')
     parser.add_argument('--final_round', default=None, help='Final round configuration')
     parser.add_argument('--test', default=None, help='Test configuration')
     parser.add_argument('--base_n_features', type=int, default=50, help='Base number of features')
