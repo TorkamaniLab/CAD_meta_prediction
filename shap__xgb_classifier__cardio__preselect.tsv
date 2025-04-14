@@ -1,0 +1,13 @@
+column_name	abs_mean_shap
+ap_hi	0.8406461
+age	0.2794825
+cholesterol	0.23126376
+weight	0.107283734
+ap_lo	0.08963405
+active	0.07262705
+alco	0.051115148
+gluc	0.03622755
+id	0.027549895
+smoke	0.022976741
+gender	0.022402074
+height	0.017180031
