@@ -55,4 +55,37 @@ This codebase includes components for **training individual prediction models**,
 These individual models were used to generate meta-features feeding into our final CAD risk prediction framework.
  
 
-## Instructions
+## Environment Configuration
+
+This project requires **Python >=3.10** and uses [Poetry](https://python-poetry.org/) for dependency management. If you prefer `pip`, a `requirements.txt` is also provided.
+
+### Using Poetry
+```bash
+poetry install
+```
+
+### Using pip
+```bash
+pip install -r requirements.txt
+```
+
+### Dependencies
+Main runtime dependencies:
+```
+catboost==1.2.5
+category-encoders==2.6.3
+fasttreeshap==0.1.6
+lightgbm==4.5.0
+lohrasb==4.2.0
+matplotlib==3.8.4
+numpy==1.21.6
+optuna-integration==3.6.0
+pandas>=1.3.5
+ray==2.7.1
+scikit-learn==1.0.2
+seaborn
+shap==0.42.1
+tune-sklearn==0.5.0
+xgboost==1.7.5
+zoish==5.0.4
+```

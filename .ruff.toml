@@ -9,3 +9,6 @@ ignore = ["F541"]
 
 [format]
 docstring-code-format = true
+
+[lint.per-file-ignores]
+"data/make_cardio_train_pickle.py" = ["UP009"]
