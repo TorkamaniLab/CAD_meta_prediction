@@ -23,6 +23,9 @@ This repository provides the core **machine learning codebase** used in our *Nat
 
 Our study introduces a novel **meta-prediction framework** that integrates genetic and non-genetic factors - unmodifiable and modifiable risk profiles - into a unified prediction system for 10-year incident CAD. This repository shares **key components of the ML pipeline**.
 
+![CAD_meta_prediction](./img/NatMed_metaprediction_fig1b.png?raw=true "CAD_meta_prediction")
+
+
 ### Cite us
 > Chen SF, et al. *Meta-prediction of coronary artery disease risk*. Nature Medicine. 2025. [DOI: 10.1038/s41591-025-03648-0](https://doi.org/10.1038/s41591-025-03648-0).  
 <details>
@@ -54,3 +57,5 @@ This codebase includes components for **training individual prediction models**,
 
 These individual models were used to generate meta-features feeding into our final CAD risk prediction framework.
  
+
+## Instructions

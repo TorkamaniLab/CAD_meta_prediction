@@ -5,6 +5,7 @@ description = "meta-prediction of coronary artery disease risk"
 authors = ["Shaun Chen <sfchen@scripps.edu>"]
 license = "MIT"
 package-mode = false
+packages = [{ include = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
@@ -16,19 +17,22 @@ lohrasb = "4.2.0"
 matplotlib = "3.8.4"
 numpy = "1.21.6"
 optuna-integration = "3.6.0"
-pandas = "1.3.5"
+pandas = ">=1.3.5"
 ray = "2.7.1"
 scikit-learn = "1.0.2"
 seaborn = "*"
 shap = "0.42.1"
 tune-sklearn = "0.5.0"
-xgboost = "2.1.1"
+xgboost = "1.7.5"
 zoish = "5.0.4"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.3.7"
 pytest = "^8.1.1"
 autopep8 = "^2.3.2"
+jupyterlab = "^4.1.8"
+ipykernel = "^6.29.4"
+ipywidgets = "^8.1.2"
 
 [build-system]
 requires = ["poetry-core"]
