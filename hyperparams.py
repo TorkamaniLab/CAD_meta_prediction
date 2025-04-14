@@ -1,106 +1,93 @@
+#!/usr/bin/env python3
+
+import lightgbm as lgb
 import xgboost as xgb
 from catboost import CatBoostClassifier, CatBoostRegressor
-import lightgbm as lgb
-# from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-# from sklearn.linear_model import LogisticRegression, LinearRegression
 
+# classifiers = [("xgb", "classifier"), ("lgb", "classifier"), ("cat", "classifier")]
+# regressors = [("xgb", "regressor"), ("lgb", "regressor"), ("cat", "regressor")]
 
-global classifiers, regressors, estimators_dict, params_dict
-classifiers = [("xgb", "classifier"), ("lgb", "classifier"), ("cat", "classifier"), ("rf", "classifier"), ("lm", "classifier")]
-regressors = [("xgb", "regressor"), ("lgb", "regressor"), ("cat", "regressor"), ("rf", "regressor"), ("lm", "regressor")]
-
-
-global estimators_dict
-estimators_dict = {
+ESTIMATORS_DICT = {
     # classifer
     ("xgb", "classifier"): xgb.XGBClassifier(),
     ("lgb", "classifier"): lgb.LGBMClassifier(),
-    ("cat", "classifier"): CatBoostClassifier(), 
-    # ("rf", "classifier"): RandomForestClassifier(),
-    # ("lm", "classifier"): LogisticRegression(),
-    
-    #regressor
+    ("cat", "classifier"): CatBoostClassifier(),
+    # regressor
     ("xgb", "regressor"): xgb.XGBRegressor(),
     ("lgb", "regressor"): lgb.LGBMRegressor(),
     ("cat", "regressor"): CatBoostRegressor(),
-    # ("rf", "regressor"): RandomForestRegressor(),
-    # ("lm", "regressor"): LinearRegression(),
 }
 
-
-global params_dict
-params_dict = {
+PARAMS_DICT = {
+    # classifier
     ("xgb", "classifier"): {
-            "objective": ["binary:logistic"],
-            "eval_metric": ["auc"],
-            "gamma": [1e-8, 10],
-            "learning_rate": [0.001, 0.3],
-            "max_bin": [2, 20],
-            "max_depth": [4, 50],
-            "min_child_weight": [0, 15],
-            # https://machinelearningmastery.com/tune-number-size-decision-trees-xgboost-python/
-            # https://stackoverflow.com/questions/65983344/how-to-choose-the-values-of-n-estimators-and-seed-in-xgbregressor
-            "n_estimators": [50, 500], 
-            "n_jobs": [-1, -1],
-            "random_state": [19920722, 19920722],
-            "reg_alpha": [0, 10],
-            "reg_lambda": [0, 10],
-            "scale_pos_weight": [0.5, 20],  ## 5/95; 95/5
-        }, 
-    
+        "objective": ["binary:logistic"],
+        "eval_metric": ["auc"],
+        "gamma": [0, 8],
+        "learning_rate": [0.001, 0.3],
+        "max_bin": [2, 20],
+        "max_depth": [3, 15],
+        "min_child_weight": [1, 12],
+        # https://machinelearningmastery.com/tune-number-size-decision-trees-xgboost-python/
+        # https://stackoverflow.com/questions/65983344/how-to-choose-the-values-of-n-estimators-and-seed-in-xgbregressor
+        "n_estimators": [100, 400],
+        "n_jobs": [-1, -1],
+        "random_state": [19920722, 19920722],
+        "reg_alpha": [0, 5],
+        "reg_lambda": [0, 5],
+        "scale_pos_weight": [0.05, 20],  ## 95/5 = 19, 5/95 = 0.05
+    },
     ("lgb", "classifier"): {
-            "boosting_type": ["gbdt"],
-            "num_leaves": [10, 100],
-            "learning_rate": [0.001, 0.3],
-            "n_estimators": [50, 500],
-            "reg_alpha": [0, 10],
-            "reg_lambda": [0, 10],
-            "random_state": [19920722, 19920722],
-            "n_jobs": [-1, -1],
-        },
-    
+        "boosting_type": ["gbdt"],
+        "num_leaves": [20, 80],
+        "learning_rate": [0.001, 0.3],
+        "n_estimators": [100, 400],
+        "reg_alpha": [0, 5],
+        "reg_lambda": [0, 5],
+        "random_state": [19920722, 19920722],
+        "n_jobs": [-1, -1],
+        "verbose": [-1, -1],
+    },
     ("cat", "classifier"): {
-            "eval_metric": ["Logloss"],
-            "random_seed": [19920722, 19920722],
-            "depth": [4, 10],
-            "loss_function": ["Logloss"],
-            "learning_rate": [0.001, 0.3],
-            'verbose': [False, False],
-        },
-    
+        "eval_metric": ["Logloss"],
+        "random_seed": [19920722, 19920722],
+        "depth": [4, 12],
+        "loss_function": ["Logloss"],
+        "learning_rate": [0.001, 0.3],
+        "verbose": [False, False],
+    },
+    # regressor
     ("xgb", "regressor"): {
-            "objective": ["reg:squarederror"],
-            "gamma": [1e-8, 10],
-            "learning_rate": [0.001, 0.3],
-            "max_bin": [2, 20],
-            "max_depth": [4, 50], 
-            "min_child_weight": [0, 15],
-            "n_estimators": [50, 500], 
-            "n_jobs": [-1, -1],
-            "random_state": [19920722, 19920722],
-            "reg_alpha": [0, 10],
-            "reg_lambda": [0, 10],
-            "scale_pos_weight": [0.5, 20],  ## 5/95; 95/5
-        }, 
-    
+        "objective": ["reg:squarederror"],
+        "gamma": [0, 8],
+        "learning_rate": [0.001, 0.3],
+        "max_bin": [2, 20],
+        "max_depth": [3, 15],
+        "min_child_weight": [1, 12],
+        "n_estimators": [100, 400],
+        "n_jobs": [-1, -1],
+        "random_state": [19920722, 19920722],
+        "reg_alpha": [0, 5],
+        "reg_lambda": [0, 5],
+        "scale_pos_weight": [0.05, 20],
+    },
     ("lgb", "regressor"): {
-            "boosting_type": ["gbdt"],
-            "num_leaves": [10, 500], 
-            "learning_rate": [0.001, 0.3],
-            "n_estimators": [50, 500], 
-            "reg_alpha": [0, 10],
-            "reg_lambda": [0, 10],
-            "random_state": [19920722, 19920722],
-            "n_jobs": [-1, -1],
-        },
-    
+        "boosting_type": ["gbdt"],
+        "num_leaves": [20, 80],
+        "learning_rate": [0.001, 0.3],
+        "n_estimators": [100, 400],
+        "reg_alpha": [0, 5],
+        "reg_lambda": [0, 5],
+        "random_state": [19920722, 19920722],
+        "n_jobs": [-1, -1],
+        "verbose": [-1, -1],
+    },
     ("cat", "regressor"): {
-            "eval_metric": ["RMSE"],
-            "random_seed": [19920722, 19920722],
-            "depth": [4, 10],
-            "loss_function": ["RMSE"],
-            "learning_rate": [0.001, 0.3],
-            'verbose': [False, False],
+        "eval_metric": ["RMSE"],
+        "random_seed": [19920722, 19920722],
+        "depth": [4, 12],
+        "loss_function": ["RMSE"],
+        "learning_rate": [0.001, 0.3],
+        "verbose": [False, False],
     },
 }
-
