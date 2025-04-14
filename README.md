@@ -4,14 +4,11 @@ Meta-Prediction of Coronary Artery Disease Risk
 </h1>
 
 [![DOI](https://img.shields.io/badge/DOI-pending-blue.svg)](https://doi.org/)
-[![Python version](https://img.shields.io/badge/Python-3.7%E2%80%933.12-blue.svg)](https://github.com/TorkamaniLab/CAD_meta_prediction)
+[![Python version](https://img.shields.io/badge/Python-3.10--3.11-blue.svg)](https://github.com/TorkamaniLab/CAD_meta_prediction)
 [![MIT license](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/TorkamaniLab/CAD_meta_prediction/blob/main/LICENSE)
 [![Open Source](https://img.shields.io/badge/Open-Source-orange.svg)](https://github.com/TorkamaniLab/CAD_meta_prediction/blob/main/LICENSE) 
 [![GitHub latest commit](https://badgen.net/github/last-commit/TorkamaniLab/CAD_meta_prediction)](https://github.com/TorkamaniLab/CAD_meta_prediction/commits)  
 
-[![GitHub forks](https://img.shields.io/github/forks/TorkamaniLab/CAD_meta_prediction.svg?style=social&label=Fork&maxAge=2592000)](https://github.com/TorkamaniLab/CAD_meta_prediction/network/) 
-[![GitHub stars](https://img.shields.io/github/stars/TorkamaniLab/CAD_meta_prediction.svg?style=social&label=Star&maxAge=2592000)](https://github.com/TorkamaniLab/CAD_meta_prediction/stargazers/) 
-[![GitHub watchers](https://img.shields.io/github/watchers/TorkamaniLab/CAD_meta_prediction.svg?style=social&label=Watch&maxAge=2592000)](https://github.com/TorkamaniLab/CAD_meta_prediction/watchers/)
 </div>
 
 
