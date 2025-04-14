@@ -7,20 +7,13 @@ import warnings
 from functools import reduce
 from pathlib import Path
 
-import catboost as cb
 import category_encoders as cen
 import fasttreeshap
-import lightgbm as lgb
-import lohrasb
 import matplotlib.pyplot as plt
 import numpy as np
 import optuna
 import pandas as pd
-import scipy
 import shap
-import sklearn
-import xgboost as xgb
-import zoish
 from joblib import dump, load
 from lohrasb.best_estimator import BaseModel
 from optuna.pruners import HyperbandPruner
@@ -37,6 +30,7 @@ from hyperparams import ESTIMATORS_DICT, PARAMS_DICT
 random.seed(19920722)
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 np.random.seed(19920722)
+
 
 def set_dtype(df, pheno_df, new_numeric_cols):
     for col in df.columns:

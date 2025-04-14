@@ -17,25 +17,17 @@ def parse_arguments():
             "--pkg ['xgb', 'cat', 'lgb'] --final_round <str> --test <str> "
             "--base_n_features <int> --n_trials <int>\nUse -h or --help to display help."
         ),
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter  # ✨ 這行加上去
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,  # ✨ 這行加上去
     )
 
-    parser.add_argument("--y_lbl", required=True,
-                        help="Label Y", metavar="LABEL")
-    parser.add_argument("--step", default="base",
-                        choices=["base", "final"], help="Step to execute", metavar="STEP")
-    parser.add_argument("--n_features", type=int, default=10,
-                        help="Number of features", metavar="N")
-    parser.add_argument("--pkg", default="xgb",
-                        choices=["xgb", "cat", "lgb"], help="Package to use", metavar="PKG")
-    parser.add_argument("--final_round", default=None,
-                        help="Final round configuration", metavar="STR")
-    parser.add_argument("--test", default=None,
-                        help="Test configuration", metavar="STR")
-    parser.add_argument("--base_n_features", type=int,
-                        default=50, help="Base number of features", metavar="N")
-    parser.add_argument("--n_trials", type=int, default=100,
-                        help="Number of trials", metavar="N")
+    parser.add_argument("--y_lbl", required=True, help="Label Y", metavar="LABEL")
+    parser.add_argument("--step", default="base", choices=["base", "final"], help="Step to execute", metavar="STEP")
+    parser.add_argument("--n_features", type=int, default=10, help="Number of features", metavar="N")
+    parser.add_argument("--pkg", default="xgb", choices=["xgb", "cat", "lgb"], help="Package to use", metavar="PKG")
+    parser.add_argument("--final_round", default=None, help="Final round configuration", metavar="STR")
+    parser.add_argument("--test", default=None, help="Test configuration", metavar="STR")
+    parser.add_argument("--base_n_features", type=int, default=50, help="Base number of features", metavar="N")
+    parser.add_argument("--n_trials", type=int, default=100, help="Number of trials", metavar="N")
     return parser.parse_args()
 
 
