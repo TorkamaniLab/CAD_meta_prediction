@@ -17,7 +17,7 @@ def parse_arguments():
             "--pkg ['xgb', 'cat', 'lgb'] --final_round <str> --test <str> "
             "--base_n_features <int> --n_trials <int>\nUse -h or --help to display help."
         ),
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,  # ✨ 這行加上去
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     parser.add_argument("--y_lbl", required=True, help="Label Y", metavar="LABEL")
